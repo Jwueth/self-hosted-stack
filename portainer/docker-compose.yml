@@ -1,0 +1,26 @@
+services:
+  portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    restart: unless-stopped
+    ports:
+      - "${TAILSCALE_IP}:9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - portainer_portainer_data:/data
+    networks:
+      - localnet
+    labels:
+      glance.name: portainer
+      glance.icon: sh:portainer
+      glance.description: Gestion des conteneurs Docker
+      glance.url: http://${TAILSCALE_IP}:9000
+      glance.category: monitoring
+
+volumes:
+  portainer_portainer_data:
+    external: true
+
+networks:
+  localnet:
+    external: true

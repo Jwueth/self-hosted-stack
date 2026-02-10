@@ -1,0 +1,62 @@
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: always
+    volumes:
+      - ./ollama:/root/.ollama
+    networks:
+      - localnet
+
+    labels:
+      glance.name: Ollama
+      glance.icon: si:ollama
+      glance.description: Exécution local de LLMs
+      glance.category: ia
+      glance.parent: ai
+
+  qdrant:
+    image: qdrant/qdrant:latest
+    container_name: qdrant
+    environment:
+      - QDRANT__SERVICE__API_KEY=${QDRANT__SERVICE__API_KEY}
+    networks:
+      - localnet
+    restart: unless-stopped
+    ports:
+      - ${TAILSCALE_IP}:3017:6333
+    labels:
+      glance.name: Qdrant vector store
+      glance.icon: sh:qdrant
+      glance.url: http://${TAILSCALE_IP}:3017/dashboard
+      glance.description: Base de données vectorielles (RAG) 
+      glance.category: ia
+    volumes:
+      - ./qdrant/storage:/qdrant/storage
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    restart: unless-stopped
+    volumes:
+      - ./openwebui/data:/app/backend/data
+    environment:
+      - OLLAMA_API_BASE_URL=http://ollama:11434
+      - WEBUI_AUTH=true
+      - WEBUI_DB_PATH=/app/backend/data/webui.db
+      - WEBUI_URL=https://ia.${DOMAIN}
+    depends_on:
+      - ollama
+    networks:
+      - localnet
+    labels:
+      glance.name: Openwebui
+      glance.id: ai
+      glance.icon: sh:open-webui
+      glance.url: https://ia.${DOMAIN}
+      glance.description: Interface web pour modèles locaux Ollama
+      glance.category: ia
+
+networks:
+  localnet:
+    external: true

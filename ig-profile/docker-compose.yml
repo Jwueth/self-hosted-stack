@@ -1,0 +1,55 @@
+services:
+
+  chrome_vnc:
+    image: dorowu/ubuntu-desktop-lxde-vnc:latest
+    container_name: chrome_vnc
+    restart: unless-stopped
+    networks:
+      - localnet
+    ports:
+      - "7900:80"   # noVNC sur le port 80 dans ce conteneur
+    volumes:
+      - ./ig-profile:/home/ubuntu
+
+
+  # 2) Runner Playwright headless qui réutilise le profil persistant
+  pw_runner:
+    image: mcr.microsoft.com/playwright:v1.57.0-jammy
+    container_name: pw_runner
+    restart: unless-stopped
+    working_dir: /work
+    volumes:
+      - ./ig-profile:/ig-profile
+      - ./work:/work
+    environment:
+      - IGSHOT_API_KEY=${IGSHOT_API_KEY}
+      - PORT=8787
+    expose:
+      - "8787"   # accessible seulement sur le réseau docker, pas exposé au host
+    entrypoint: ["bash","-lc","sleep infinity"]
+    networks:
+      - localnet
+
+
+networks:
+  localnet:
+    external: true
+
+
+#n8n_ig:
+ # image: n8nio/n8n:latest
+  #container_name: n8n_ig
+  #restart: unless-stopped
+  #environment:
+  #  - NODE_ENV=production
+  #  - N8N_SECURE_COOKIE=false
+  #  - GENERIC_TIMEZONE=Europe/Zurich
+  #  - N8N_AVAILABLE_BINARY_DATA_MODES=filesystem
+  #volumes:
+  #  - ./data/n8n_ig:/home/node/.n8n
+  #  - ./work:/work
+  #  - /var/run/docker.sock:/var/run/docker.sock
+  #  - /usr/bin/docker:/usr/bin/docker
+  # Pas de ports = pas exposé
+  #networks:
+  #  - localnet

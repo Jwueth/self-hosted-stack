@@ -1,0 +1,19 @@
+ # Nginx - Reverse proxy
+services:
+  nginx:
+    image: nginx:latest
+    container_name: nginx
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./config/conf.d:/etc/nginx/conf.d
+      - ./data/certificates:/etc/nginx/certificates
+      - ./data/www:/var/www/html
+    networks:
+      - localnet
+
+networks:
+  localnet:
+    external: true

@@ -1,0 +1,30 @@
+services:
+  glance:
+    image: glanceapp/glance:latest
+    container_name: glance
+    volumes:
+      - ./config/:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /etc/timezone:/etc/timezone:ro
+      - /etc/localtime:/etc/localtime:ro
+    env_file:
+      - .env
+    environment:
+      - TZ=${TZ}
+      - WEATHER_LOCATION=${WEATHER_LOCATION}
+      - PORTAINER_ENDPOINT_ID=${PORTAINER_ENDPOINT_ID}
+      - PORTAINER_URL=${PORTAINER_URL}
+      - PORTAINER_API_KEY=${PORTAINER_API_KEY}
+    restart: unless-stopped
+    ports:
+      - ${TAILSCALE_IP}:3010:8080
+    networks:
+      - localnet
+    labels:
+      glance.name: Glance
+      glance.parent: gestion
+      glance.category: monitoring
+
+networks:
+  localnet:
+    external: true

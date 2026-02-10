@@ -1,0 +1,38 @@
+
+services:
+  gitea:
+    image: gitea/gitea:latest
+    container_name: gitea
+    environment:
+      USER_UID: "${PUID}"
+      USER_GID: "${PGID}"
+
+      # Database (Postgres existant sur localnet)
+      GITEA__database__DB_TYPE: postgres
+      GITEA__database__HOST: ${POSTGRES_HOST}:${POSTGRES_PORT}
+      GITEA__database__NAME: gitea
+      GITEA__database__USER: gitea
+      GITEA__database__PASSWD: ${GITEA_DB_PASSWD}
+
+      # Server
+      GITEA__server__PROTOCOL: http
+      GITEA__server__HTTP_PORT: "3000"
+      GITEA__server__ROOT_URL: http://localhost:3000/
+
+      # Recommandé si tu utilises uniquement HTTPS Git
+      GITEA__server__DISABLE_SSH: "true"
+
+    volumes:
+      - ./data:/data
+    networks:
+      - localnet
+    ports:
+      - "${TAILSCALE_IP}:3000:3000"
+    restart: unless-stopped
+
+volumes:
+  gitea_data:
+
+networks:
+  localnet:
+    external: true

@@ -1,0 +1,51 @@
+services:
+  mediamanager:
+    container_name: mediamanager_server
+    image: ghcr.io/maxdorninger/mediamanager/mediamanager:latest
+    ports:
+      - "3020:8000"
+    environment:
+      - CONFIG_DIR=/app/config
+    volumes:
+      # Mount your actual media directories here - these paths should match your config.toml
+      - ./data/:/data/  # Example: change ./data/ to your actual media root
+      # Config folder for application configuration
+      - ./config/:/app/config/
+      # Image folder
+      - ./images/:/data/images/
+    depends_on:
+      db:
+        condition: service_healthy
+  db:
+    container_name: mediamanager_postgres
+    image: postgres:17
+    restart: unless-stopped
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -d $${POSTGRES_DB} -U $${POSTGRES_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      POSTGRES_USER: MediaManager
+      POSTGRES_DB: MediaManager
+      POSTGRES_PASSWORD: ${MEDIAMANAGER_DB_PASSWORD}
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - WEBUI_PORT=3021
+      - TORRENTING_PORT=6881
+    volumes:
+      - ./qbittorrent/appdata:/config
+      - ./data/torrents:/downloads #optional
+    ports:
+      - 3021:3021
+      - 6881:6881
+      - 6881:6881/udp
+    restart: unless-stopped

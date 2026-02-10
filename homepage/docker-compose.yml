@@ -1,0 +1,43 @@
+services:
+  homepage:
+    image: ghcr.io/gethomepage/homepage:latest
+    container_name: homepage
+    user: "0:0"
+    volumes:
+      - ./config:/app/config
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - localnet
+    restart: unless-stopped
+    environment:
+      - HOMEPAGE_ALLOWED_HOSTS=home.localhost,home.${DOMAIN},localhost:3001
+    labels:
+      glance.name: Homepage
+      glance.parent: gestion
+      glance.category: monitoring
+
+
+  lol-matches-api:
+    image: your-dockerhub-user/lol-matches-api:latest
+    container_name: lol-matches-api
+    ports:
+      - "8000:8000"
+    environment:
+      - PANDASCORE_API_KEY=${PANDASCORE_API_KEY}
+      - LOCAL_TZ=${TZ}
+    env_file:
+      - .env
+    volumes:
+      - ./lol-api/static:/app/static
+      - ./lol-api/matches_cache.json:/app/matches_cache.json
+    restart: unless-stopped
+    networks:
+      - localnet
+    labels:
+      glance.name: Lol widget
+      glance.parent: gestion
+      glance.category: monitoring
+
+networks:
+  localnet:
+    external: true

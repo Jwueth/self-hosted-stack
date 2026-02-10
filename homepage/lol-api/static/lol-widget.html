@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LoL Matches</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0d0d0d;
+            color: #e5e5e5;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .match {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            transition: all 0.2s;
+        }
+
+        .match:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(4px);
+        }
+
+        .status-icon {
+            font-size: 20px;
+            min-width: 24px;
+            text-align: center;
+        }
+
+        .team {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .team.team-right {
+            justify-content: flex-end;
+        }
+
+        .team-logo {
+            width: 32px;
+            height: 32px;
+            object-fit: contain;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .team-name {
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            min-width: 60px;
+            text-align: center;
+            padding: 4px 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+        }
+
+        .score.live {
+            background: rgba(239, 68, 68, 0.25);
+            color: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .match-info {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            min-width: 80px;
+        }
+
+        .match-time {
+            font-size: 12px;
+            color: #b0b0b0;
+            white-space: nowrap;
+        }
+
+        .tournament {
+            font-size: 10px;
+            color: #7a7a7a;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #b0b0b0;
+        }
+
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #ef4444;
+        }
+
+        .last-update {
+            text-align: center;
+            font-size: 11px;
+            color: #7a7a7a;
+            margin-top: 16px;
+        }
+
+        .refresh-controls {
+            text-align: center;
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .refresh-button {
+            background: linear-gradient(135deg, #4f46e5 0%, #6d28d9 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+        }
+
+        .refresh-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .refresh-button:active {
+            transform: translateY(0);
+        }
+
+        .refresh-button:disabled {
+            background: #374151;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .refresh-status {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        .refresh-status.success {
+            color: #10b981;
+        }
+
+        .refresh-status.error {
+            color: #ef4444;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div id="matches-container">
+            <div class="loading">⏳ Chargement des matchs...</div>
+        </div>
+        <div id="last-update" class="last-update"></div>
+    </div>
+    <div class="refresh-controls">
+        <button id="refresh-btn" class="refresh-button">
+            🔄 Rafraîchir la liste des matchs
+        </button>
+        <span id="refresh-status" class="refresh-status"></span>
+    </div>
+
+<script>
+    const API_URL = '/lol/matches';
+    const REFRESH_INTERVAL = 60000;
+
+    async function refreshMatchList() {
+        const btn = document.getElementById('refresh-btn');
+        const status = document.getElementById('refresh-status');
+
+        try {
+            btn.disabled = true;
+            btn.textContent = '⏳ Rafraîchissement...';
+            status.textContent = '';
+            status.className = 'refresh-status';
+
+            const response = await fetch(`${API_URL}/refresh`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+
+            status.textContent = `✅ ${data.matches_count} matchs chargés`;
+            status.className = 'refresh-status success';
+
+            await fetchMatches();
+
+            setTimeout(() => {
+                btn.disabled = false;
+                btn.textContent = '🔄 Rafraîchir la liste des matchs';
+                setTimeout(() => {
+                    status.textContent = '';
+                }, 3000);
+            }, 2000);
+
+        } catch (error) {
+            console.error('Erreur refresh:', error);
+            status.textContent = '❌ Erreur de rafraîchissement';
+            status.className = 'refresh-status error';
+
+            btn.disabled = false;
+            btn.textContent = '🔄 Rafraîchir la liste des matchs';
+        }
+    }
+
+    const statusIcons = {
+        'not_started': '⏰',
+        'running': '🔴',
+        'finished': '✅',
+        'canceled': '❌',
+        'postponed': '⏸️'
+    };
+
+    function formatLastUpdate(isoString) {
+        if (!isoString) return '';
+        const date = new Date(isoString);
+        return `Dernière màj: ${date.toLocaleString('fr-FR')}`;
+    }
+
+    function renderMatches(data) {
+        const container = document.getElementById('matches-container');
+        const lastUpdateEl = document.getElementById('last-update');
+
+        if (!data.matches || data.matches.length === 0) {
+            container.innerHTML = '<div class="loading">Aucun match à afficher</div>';
+            return;
+        }
+
+        const matchesHtml = data.matches.map(match => {
+            const teams = match.teams || [];
+            const team1 = teams[0] || {};
+            const team2 = teams[1] || {};
+            const icon = statusIcons[match.status] || '📅';
+            const isLive = match.status === 'running';
+
+            let scoreHtml = '<div class="score">vs</div>';
+            if (team1.score !== null && team2.score !== null) {
+                scoreHtml = `<div class="score ${isLive ? 'live' : ''}">${team1.score} - ${team2.score}</div>`;
+            }
+
+            const tournament = match.tournament ? match.tournament.split(' - ')[0] : '';
+
+            return `
+                <div class="match">
+                    <div class="status-icon">${icon}</div>
+
+                    <div class="team">
+                        ${team1.logo ? `<img src="${team1.logo}" class="team-logo">` : ''}
+                        <span class="team-name">${team1.name || '?'}</span>
+                    </div>
+
+                    ${scoreHtml}
+
+                    <div class="team team-right">
+                        <span class="team-name">${team2.name || '?'}</span>
+                        ${team2.logo ? `<img src="${team2.logo}" class="team-logo">` : ''}
+                    </div>
+
+                    <div class="match-info">
+                        <span class="match-time">${match.begin_at_local_human || ''}</span>
+                        <span class="tournament" title="${match.tournament || ''}">${tournament}</span>
+                    </div>
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML = matchesHtml;
+        lastUpdateEl.textContent = formatLastUpdate(data.last_refresh);
+    }
+
+    async function fetchMatches() {
+        try {
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+            const data = await response.json();
+            renderMatches(data);
+        } catch (error) {
+            console.error('Erreur:', error);
+            document.getElementById('matches-container').innerHTML =
+                `<div class='error'>❌ Erreur de chargement<br><small>${error.message}</small></div>`;
+        }
+    }
+
+    fetchMatches();
+    setInterval(fetchMatches, REFRESH_INTERVAL);
+    document.getElementById('refresh-btn').addEventListener('click', refreshMatchList);
+</script>
+</body>
+</html>

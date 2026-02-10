@@ -1,0 +1,22 @@
+services:
+  zerobyte:
+    image: ghcr.io/nicotsx/zerobyte:v0.18
+    container_name: zerobyte
+    restart: unless-stopped
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse:dev/fuse
+    ports:
+      - "4096:4096"
+    environment:
+      - TZ=${TZ}
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /var/lib/zerobyte:/var/lib/zerobyte
+      - /home/YOUR_USER/backups/zerobyte:/backups
+      - /home/YOUR_USER/docker/nextcloud/data/nextcloud/data/admin/files:/nextcloud_data:ro
+      - /home/YOUR_USER/docker/n8n/data/n8n:/n8n_data:ro
+      - /home/YOUR_USER/backups/postgres:/postgres_data:ro
+      - /home/YOUR_USER/backups/nextcloud:/nextcloud_db:ro
+      - /home/YOUR_USER/docker/media/calibre/library:/calibre:ro

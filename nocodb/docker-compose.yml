@@ -1,0 +1,29 @@
+
+services:
+  nocodb:
+    container_name: nocodb
+    image: "nocodb/nocodb:latest"
+    restart: unless-stopped
+    networks:
+      - localnet
+    environment:
+      NC_AUTH_JWT_SECRET: "${NC_AUTH_JWT_SECRET}"
+      NC_DB: "pg://postgres:5432?u=nocodb_user&p=${NOCODB_DB_PASSWORD}&d=nocodb"
+      NC_PUBLIC_URL: "https://nocodb.${DOMAIN}"
+      NC_ADMIN_EMAIL: "${NC_ADMIN_EMAIL}"
+      NC_ADMIN_PASSWORD: "${NC_ADMIN_PASSWORD}"
+    volumes:
+      - "./data:/usr/app/data"
+    ports:
+      - ${TAILSCALE_IP}:3025:8080
+
+    labels:
+      glance.name: Nocodb
+      glance.icon: sh:nocodb
+      glance.description: Base de données Nocodb
+      glance.url: http://${TAILSCALE_IP}:3025
+      glance.category: bdds
+
+networks:
+  localnet:
+    external: true

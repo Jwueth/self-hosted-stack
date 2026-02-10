@@ -1,0 +1,66 @@
+# Env & secrets
+.env
+**/.env
+**/ollama
+
+# Data directories (persisted volumes)
+**/data/
+# Dossiers database internes aux services (pas /docker/database)
+**/*/database/
+!/database/
+**/db/
+**/postgres/
+**/mysql/
+**/redis/
+**/elasticsearch/
+**/meili_data/
+**/uploads/
+
+# ig-profile
+**/ig-profile/ig-profile
+# Ignore tout dans work
+**/ig-profile/work/*
+# Ré-autorise le dossier
+!**/ig-profile/work/
+# Autorise les fichiers JS
+!**/ig-profile/work/*.js
+
+# Metabase 
+**/metabase/metabase-data
+# Media internes aux services (pas le dossier docker/media global)
+**/*/media/
+!/media/
+**/media/calibre
+**/media/yourspotify_db
+# Mediamanager
+**/mediamanager/config/config.toml
+**/mediamanager/images
+**/mediamanager/qbittorrent
+**/files/
+**/storage/
+**/backups/
+
+# Authelia secrets
+authelia/config
+authelia/**/users_database.yml
+authelia/**/secrets.yml
+authelia/**/*.key
+authelia/**/*.pem
+**/*.log
+**/logs/
+
+
+homepage/lol-api/*.json
+
+# App-generated stuff
+**/logs/
+**/tmp/
+**/cache/
+
+# OS / editor
+.DS_Store
+.vscode/
+.idea/
+
+# Docker noise
+**/*.sock

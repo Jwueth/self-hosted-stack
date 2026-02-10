@@ -1,0 +1,51 @@
+services:
+# PostgresSQL
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    networks:
+      - localnet
+    restart: unless-stopped
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    environment:
+      POSTGRES_USER: ${ADMIN_USER}
+      POSTGRES_PASSWORD: ${ADMIN_PASSWORD}
+      POSTGRES_DB: N8N
+    volumes:
+      - ./data/postgresql/data:/var/lib/postgresql/data
+
+    labels:
+      glance.name: Postgresql
+      glance.parent: data
+      glance.icon: sh:postgresql
+      glance.description: Base de données
+      glance.category: bdds
+
+# PgAdmin
+  pgadmin:
+    image: dpage/pgadmin4
+    container_name: pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${ADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${ADMIN_PASSWORD}
+    depends_on:
+      - postgres
+    ports:
+      - ${TAILSCALE_IP}:3011:80
+    volumes:
+      - ./data/pgadmin:/var/lib/pgadmin
+    networks:
+      - localnet
+    labels:
+      glance.name: PgAdmin
+      glance.id: data
+      glance.icon: sh:postgresql
+      glance.description: Gestion PostgreSQL
+      glance.url: http://${TAILSCALE_IP}:3011
+      glance.category: bdds
+
+
+networks:
+  localnet:
+    external: true

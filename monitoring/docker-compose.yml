@@ -1,0 +1,25 @@
+services:
+  kuma:
+    image: louislam/uptime-kuma:latest
+    container_name: kuma
+    restart: always
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+    ports:
+      - ${TAILSCALE_IP}:3013:3001
+    networks:
+      - localnet
+    labels:
+      glance.name: UptimeKuma
+      glance.icon: sh:uptime-kuma
+      glance.id: gestion
+      glance.description: Surveillance des sites
+      glance.url: https://kuma.${DOMAIN}
+      glance.category: monitoring
+
+networks:
+  localnet:
+    external: true

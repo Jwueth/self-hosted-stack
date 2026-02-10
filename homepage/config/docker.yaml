@@ -1,0 +1,4 @@
+# Serveur-local
+
+my-docker:
+  socket: /var/run/docker.sock

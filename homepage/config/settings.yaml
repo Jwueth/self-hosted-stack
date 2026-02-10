@@ -1,0 +1,24 @@
+---
+  title: My homepage
+  disableCollapse: true
+  hideVersion: true
+  showStats: false
+  headerStyle: clean
+
+  theme: dark
+
+  layout:
+    Monitoring:
+      style: row
+      columns: 4
+      header: false
+    Yourspotify:
+      style: row
+      columns: 1
+      header: false
+
+    Widgets:
+      style: row
+      columns: 2
+      header: false
+

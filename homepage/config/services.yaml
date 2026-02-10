@@ -1,0 +1,104 @@
+
+# Fichier de configuration listant les services 
+
+- Widgets:
+      - Nextcloud:
+          icon: nextcloud.png
+          href: https://nextcloud.example.com
+          description: Cloud et vault Obsidian
+          server: my-docker
+          container: nextcloud
+          widget:
+            type: nextcloud
+            url: https://nextcloud.example.com
+            username: your_username
+            password: your_password
+
+      - Calibre web:
+          icon: calibre.png
+          href: https://books.example.com
+          description: Bibliothèque Ebooks
+          server: my-docker
+          container: calibre-web
+          siteMonitor: http://calibre-web:8083
+          widget:
+            type: calibreweb
+            url: http://calibre-web:8083
+            username: your_username
+            password: your_password
+      - Portainer:
+          icon: portainer.png
+          href: https://portainer.example.com
+          description: Gestion et surveillance des containers docker
+          server: my-docker
+          container: portainer
+          siteMonitor: https://portainer:9443
+          widget:
+            type: portainer
+            url: https://portainer:9443
+            env: 3
+            key: your_portainer_api_key
+      - Uptime kuma:
+          icon: uptime-kuma.png
+          href: https://kuma.example.com
+          description: Surveillance des statuts des sites
+          server: my-docker
+          container: kuma
+          siteMonitor: http://kuma:3001
+          widget:
+            type: uptimekuma
+            url: http://kuma:3001
+            slug: serveur
+- Monitoring:
+      - OpenWebUi:
+          icon: open-webui.png
+          href: https://ia.example.com
+          description: Chat pour modèles locaux et Agents N8N
+          server: my-docker
+          container: openwebui
+          siteMonitor: http://openwebui:8080
+      - N8N:
+          icon: n8n.png
+          href: https://n8n.example.com
+          description: Automatisation et agents IA
+          server: my-docker
+          container: n8n
+          siteMonitor: http://n8n:88
+      - Qdrant:
+          icon: mdi-vector-difference-#FFFFFF
+          href: https://qdrant.example.com/dashboard
+          description: Base de données vectorielles pour RAG
+          server: my-docker
+          container: qdrant
+          siteMonitor: http://qdrant:6333
+      - PosgresSQL:
+          icon: postgres.png
+          href: https://pgadmin.example.com
+          description: Base de données (LLMs)
+          server: my-docker
+          container: qdrant
+          siteMonitor: http://pgadmin:80
+- Yourspotify:
+      - Yourspotify:
+          description: Stats (semaine, mois, année)
+          icon: spotify.png
+          href: https://sound.example.com
+          server: my-docker
+          container: yourspotify
+          siteMonitor: http://yourspotify:80
+          widgets:
+              - type: yourspotify
+                url: https://sound.example.com/api/
+                key: your_yourspotify_api_key
+                interval: week
+                fields: ["songs", "artists"]
+              - type: yourspotify
+                url: https://sound.example.com/api/
+                key: your_yourspotify_api_key
+                interval: month
+                fields: ["songs", "artists"]
+              - type: yourspotify
+                url: https://sound.example.com/api/
+                key: your_yourspotify_api_key
+                interval: year
+                fields: ["songs", "artists"]

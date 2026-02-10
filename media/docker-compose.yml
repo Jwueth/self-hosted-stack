@@ -1,0 +1,107 @@
+---
+
+# Calibre library
+
+services:
+  calibre:
+    image: lscr.io/linuxserver/calibre:latest
+    container_name: calibre
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - PASSWORD=${ADMIN_PASSWORD}
+      - CLI_ARGS= #optional
+    volumes:
+      - ./calibre/config:/config
+      - ./calibre/library:/config/Calibre Library
+    ports:
+      - ${TAILSCALE_IP}:3016:8080
+    restart: unless-stopped
+    networks:
+      - localnet
+
+    labels:
+      glance.name: Bibliothèque Calibre
+      glance.icon: sh:calibre
+      glance.parent: books
+      glance.description: Base de données E-books
+      glance.category: medias
+
+# Calibre web
+
+  calibre-web:
+    image: lscr.io/linuxserver/calibre-web:latest
+    container_name: calibre-web
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - OAUTHLIB_RELAX_TOKEN_SCOPE=1 #optional
+    volumes:
+      - ./calibre-web/data:/config
+      - ./calibre/library:/books
+    ports:
+      - ${TAILSCALE_IP}:3015:8083
+    restart: unless-stopped
+    depends_on:
+      - calibre
+    networks:
+      - localnet
+
+    labels:
+      glance.name: Calibre-web
+      glance.id: books
+      glance.icon: sh:calibre-web
+      glance.url: https://books.${DOMAIN}
+      glance.description: Web-app E-books
+      glance.category: medias
+
+# YourSpotify
+
+  yourspotify:
+    image: lscr.io/linuxserver/your_spotify:latest
+    container_name: yourspotify
+    environment:
+      - PUID=${PUID}
+      - PGID=${PGID}
+      - TZ=${TZ}
+      - APP_URL=https://sound.${DOMAIN}
+      - SPOTIFY_PUBLIC=${SPOTIFY_PUBLIC}
+      - SPOTIFY_SECRET=${SPOTIFY_SECRET}
+      - API_ENDPOINT=https://sound.${DOMAIN}/api
+      - CORS=https://sound.${DOMAIN}
+      - MONGO_ENDPOINT=mongodb://mongo:27017/yourspotify_db
+    depends_on:
+      - mongo
+    restart: unless-stopped
+    networks:
+      - localnet
+
+    labels:
+      glance.name: Yourspotify
+      glance.icon: sh:your-spotify
+      glance.id: sound
+      glance.url: https://sound.${DOMAIN}
+      glance.description: Statistiques d'écoutes sur Spotify
+      glance.category: medias
+
+  mongo:
+    container_name: mongodb
+    image: mongo:6
+    volumes:
+      - ./yourspotify_db:/data/db
+    restart: unless-stopped
+    networks:
+      - localnet
+
+    labels:
+      glance.name: DB Yourspotify
+      glance.parent: sound
+      glance.category: medias
+
+networks:
+  localnet:
+    external: true

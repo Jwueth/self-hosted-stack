@@ -1,0 +1,35 @@
+services:
+  # n8n
+  n8n:
+    image: n8nio/n8n:latest
+    container_name: n8n
+    labels:
+      glance.name: N8N
+      glance.icon: si:n8n
+      glance.url: https://n8n.${DOMAIN}
+      glance.description: Automatisations et agents IA
+      glance.category: auto
+    restart: always
+    volumes:
+      - ./data/n8n:/home/node/.n8n
+      - /home/YOUR_USER/docker/ig-profile/work:/work
+
+    ports:
+      - ${TAILSCALE_IP}:3014:88
+    environment:
+      - N8N_HOST=n8n.${DOMAIN}
+      - N8N_PORT=88
+      - N8N_PROTOCOL=https
+      - VUE_APP_URL_BASE_API=https://n8n.${DOMAIN}
+      - WEBHOOK_URL=https://n8n.${DOMAIN}
+      - NODE_ENV=production
+      - N8N_COMMUNITY_PACKAGES_ENABLED=true
+      - N8N_SECURE_COOKIE=false
+      - N8N_AVAILABLE_BINARY_DATA_MODES=filesystem
+
+    networks:
+      - localnet
+
+networks:
+  localnet:
+    external: true

@@ -1,0 +1,77 @@
+services:
+  # Nextcloud
+  nextcloud:
+    image: nextcloud:latest
+    container_name: nextcloud
+    restart: unless-stopped
+    volumes:
+      - ./data/nextcloud:/var/www/html
+    environment:
+      - MYSQL_HOST=nextcloud-db
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=${ADMIN_USER}
+      - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_PASSWORD}
+      - NEXTCLOUD_ADMIN_USER=${ADMIN_USER}
+      - NEXTCLOUD_ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - NEXTCLOUD_TRUSTED_DOMAINS=localhost nextcloud.localhost nextcloud.${DOMAIN}
+    networks:
+      - localnet
+    depends_on:
+      - nextcloud-db
+    labels:
+      glance.name: Nextcloud
+      glance.id: docs
+      glance.icon: sh:nextcloud
+      glance.url: https://nextcloud.${DOMAIN}
+      glance.description: Cloud et vault Obsidian
+      glance.category: medias
+
+  # Nextcloud Webhook Worker
+  nextcloud-webhook-worker:
+    image: nextcloud:latest
+    container_name: nextcloud-webhook-worker
+    restart: unless-stopped
+    volumes:
+      - ./data/nextcloud:/var/www/html
+    networks:
+      - localnet
+    depends_on:
+      - nextcloud
+      - nextcloud-db
+    user: www-data
+    working_dir: /var/www/html
+    command:
+      - /bin/sh
+      - -c
+      - |
+        while true; do
+          php occ background-job:worker -t 60 'OCA\WebhookListeners\BackgroundJobs\WebhookCall' || true
+          sleep 2
+        done
+    labels:
+      glance.name: Worker Nextcloud
+      glance.parent: docs
+      glance.category: medias
+
+  # Base de données pour Nextcloud
+  nextcloud-db:
+    image: mariadb:latest
+    container_name: nextcloud-db
+    restart: unless-stopped
+    volumes:
+      - ./data/nextcloud-db:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=${NEXTCLOUD_MYSQL_ROOT_PASSWORD}
+      - MYSQL_DATABASE=nextcloud
+      - MYSQL_USER=${ADMIN_USER}
+      - MYSQL_PASSWORD=${NEXTCLOUD_MYSQL_PASSWORD}
+    networks:
+      - localnet
+    labels:
+      glance.name: BD Nextcloud
+      glance.parent: docs
+      glance.category: medias
+
+networks:
+  localnet:
+    external: true

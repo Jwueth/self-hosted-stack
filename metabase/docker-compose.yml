@@ -1,0 +1,30 @@
+services:
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    restart: unless-stopped
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: ${POSTGRES_PORT}
+      MB_DB_USER: metabase
+      MB_DB_PASS: ${MB_DB_PASS}
+      MB_DB_HOST: ${POSTGRES_HOST}
+      MB_SITE_URL: "https://metabase.${DOMAIN}"
+    labels:
+      glance.name: metabase
+      glance.icon: sh:metabase
+      glance.description: Analyse de données
+      glance.url: http://${TAILSCALE_IP}:3012
+      glance.category: monitoring
+    ports:
+      - ${TAILSCALE_IP}:3012:3000
+    volumes:
+      - /dev/urandom:/dev/random:ro
+      - ./metabase-data:/metabase-data
+    networks:
+      - localnet
+
+networks:
+  localnet:
+    external: true
